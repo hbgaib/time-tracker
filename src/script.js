@@ -41,27 +41,9 @@ function persistAll() {
   localStorage.setItem('startTimestamp', startTimestamp);
 }
 
-function promptForSeconds(type) {
-    let input = prompt(`Enter HH:MM:SS to ${type} (e.g., 01:30:00 for 1 hour 30 minutes):`);
-    if (!input) return 0;
 
-    const parts = input.split(':').map(Number);
-    let seconds = 0;
-    if (parts.length === 3) {
-        seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
-    } else if (parts.length === 2) {
-        seconds = parts[0] * 60 + parts[1];
-    } else if (parts.length === 1) {
-        seconds = parts[0];
-    } else {
-        alert('Invalid format. Please use HH:MM:SS, MM:SS, or SS.');
-        return 0;
-    }
-    return seconds;
-}
 
-function onAddSubtract(type) {
-  const deltaSeconds = promptForSeconds(type);
+function onAddSubtract(type, deltaSeconds) {
   if (deltaSeconds <= 0) return;
 
   const entry = { type, seconds: deltaSeconds, timestamp: Date.now() };
@@ -175,10 +157,81 @@ function init() {
 
 document.addEventListener('DOMContentLoaded', () => {
     init();
-    document.getElementById('addBtn').addEventListener('click', () => onAddSubtract('add'));
-    document.getElementById('subBtn').addEventListener('click', () => onAddSubtract('sub'));
+
+    const hourInput = document.getElementById('hourInput');
+    const minuteInput = document.getElementById('minuteInput');
+    const formError = document.getElementById('formError');
+    const applyAddBtn = document.getElementById('applyAdd');
+    const applySubBtn = document.getElementById('applySub');
+
+    function validateInputs() {
+        const hVal = hourInput.value;
+        const mVal = minuteInput.value;
+
+        const h = parseInt(hVal);
+        const m = parseInt(mVal);
+
+        const isHourValid = (!isNaN(h) && h >= 0) || hVal === '';
+        const isMinuteValid = (!isNaN(m) && m >= 0) || mVal === '';
+
+        const isBothEmpty = hVal === '' && mVal === '';
+
+        if (isHourValid && isMinuteValid && !isBothEmpty) {
+            formError.classList.remove('visible');
+            applyAddBtn.disabled = false;
+            applySubBtn.disabled = false;
+        } else {
+            formError.classList.add('visible');
+            applyAddBtn.disabled = true;
+            applySubBtn.disabled = true;
+        }
+    }
+
+    hourInput.addEventListener('input', validateInputs);
+    minuteInput.addEventListener('input', validateInputs);
+
+    applyAddBtn.addEventListener('click', () => {
+        let hours = parseInt(hourInput.value) || 0;
+        let minutes = parseInt(minuteInput.value) || 0;
+
+        if (minutes >= 60) {
+            const extraHours = Math.floor(minutes / 60);
+            hours += extraHours;
+            minutes = minutes % 60;
+        }
+
+        const deltaSeconds = hours * 3600 + minutes * 60;
+        if (deltaSeconds === 0) return;
+
+        onAddSubtract('add', deltaSeconds);
+        hourInput.value = '';
+        minuteInput.value = '';
+        validateInputs();
+    });
+
+    applySubBtn.addEventListener('click', () => {
+        let hours = parseInt(hourInput.value) || 0;
+        let minutes = parseInt(minuteInput.value) || 0;
+
+        if (minutes >= 60) {
+            const extraHours = Math.floor(minutes / 60);
+            hours += extraHours;
+            minutes = minutes % 60;
+        }
+
+        const deltaSeconds = hours * 3600 + minutes * 60;
+        if (deltaSeconds === 0) return;
+
+        onAddSubtract('sub', deltaSeconds);
+        hourInput.value = '';
+        minuteInput.value = '';
+        validateInputs();
+    });
+
     document.getElementById('undoBtn').addEventListener('click', onUndo);
     document.getElementById('countBtn').addEventListener('click', () => {
         isCounting ? stopCountdown() : startCountdown();
     });
+
+    validateInputs(); // Initial validation on page load
 });

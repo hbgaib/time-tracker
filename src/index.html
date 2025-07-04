@@ -9,12 +9,19 @@
 <body>
     <div id="display">00:00:00</div>
 
+    <form id="adjustForm">
+        <input id="hourInput" type="number" min="0" placeholder="Hours">
+        <input id="minuteInput" type="number" min="0" placeholder="Minutes">
+        <button id="applyAdd" type="button">+ Add Time</button>
+        <button id="applySub" type="button">− Subtract Time</button>
+    </form>
+
     <div id="controls">
-        <button id="addBtn">+ Add Time</button>
-        <button id="subBtn">− Subtract Time</button>
         <button id="undoBtn">⎌ Undo</button>
         <button id="countBtn">Start Countdown</button>
     </div>
+
+    <p id="formError" class="error">Please enter at least one non‑negative number (hours or minutes).</p>
 
     <ul id="history"></ul>
 

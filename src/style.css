@@ -47,3 +47,16 @@ body {
     justify-content: space-between;
     align-items: center;
 }
+
+#adjustForm { display: flex; gap: 8px; margin-bottom: 16px; }
+#adjustForm input { width: 70px; padding: 6px; font-size: 1em; }
+#adjustForm button { padding: 6px 12px; }
+#formError {
+  visibility: hidden;
+  color: #d9534f;
+  font-size: 0.85em;
+  margin: 10px 0;
+}
+#formError.visible {
+  visibility: visible;
+}
