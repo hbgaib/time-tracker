@@ -99,7 +99,10 @@ function startCountdown() {
   startTimestamp = Date.now();
   persistAll(); // Persist updated startTimestamp immediately
 
-  document.getElementById('countBtn').textContent = 'Stop Countdown';
+  const btn = document.getElementById('countBtn');
+  btn.textContent = 'Stop Countdown';
+  btn.classList.add('state-stop');
+  btn.classList.remove('state-start');
   beginCountdown();
 }
 
@@ -122,7 +125,10 @@ function stopCountdown() {
 
   isCounting = false;
   persistAll();
-  document.getElementById('countBtn').textContent = 'Start Countdown';
+  const btn = document.getElementById('countBtn');
+  btn.textContent = 'Start Countdown';
+  btn.classList.add('state-start');
+  btn.classList.remove('state-stop');
 }
 
 
@@ -136,22 +142,20 @@ function init() {
   updateDisplay(remainingSeconds);
   renderHistory();
 
+  const btn = document.getElementById('countBtn');
   if (isCounting) {
-    // Compute missed elapsed while page was closed
-    // The beginCountdown will handle the elapsed time, so no need to subtract here.
-    // const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
-    // remainingSeconds = Math.max(0, remainingSeconds - elapsed);
-    // updateDisplay(remainingSeconds);
-    // localStorage.setItem('remainingSeconds', remainingSeconds);
-
+    btn.textContent = 'Stop Countdown';
+    btn.classList.add('state-stop');
+    btn.classList.remove('state-start');
     if (remainingSeconds > 0) {
       beginCountdown();
     } else {
       triggerAlarmLoop();
-      document.getElementById('countBtn').textContent = 'Stop Countdown';
     }
   } else {
-    document.getElementById('countBtn').textContent = 'Start Countdown';
+    btn.textContent = 'Start Countdown';
+    btn.classList.add('state-start');
+    btn.classList.remove('state-stop');
   }
 }
 
