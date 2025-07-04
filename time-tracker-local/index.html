@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Time Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="tracker">
+        <h1 class="tracker__display">0 hours 0 minutes</h1>
+        <div class="tracker__input-group">
+            <input type="number" id="hoursInput" class="tracker__hours-input" min="0" placeholder="Enter hours">
+            <input type="number" id="minutesInput" class="tracker__minutes-input" min="0" placeholder="Enter minutes" required>
+            <button id="addTimeBtn" class="tracker__button">Add Time</button>
+            <button id="subtractTimeBtn" class="tracker__button tracker__button--subtract">Subtract Time</button>
+        </div>
+        <h2 class="tracker__history-title">History</h2>
+        <ol id="historyList" class="tracker__history"></ol>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
