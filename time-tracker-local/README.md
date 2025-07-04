@@ -4,7 +4,8 @@ This is a simple, client-side web application that allows you to track time allo
 
 ## Features
 
--   **Time Tracking:** Add or subtract time using both hours (optional) and minutes (required).
+-   **Time Tracking:** Add or subtract time using both hours and minutes.
+-   **Input Validation:** At least one of the hours or minutes input must be greater than zero to perform an operation. An error message will be displayed if both fields are empty or zero.
 -   **History Log:** View a chronological history of all time additions and subtractions.
 -   **Persistence:** All data (total time and history) is saved locally in your browser's `localStorage`, so your progress is retained even if you close the browser.
 -   **Responsive Design:** The interface is designed to work well on both desktop and mobile devices.
@@ -18,11 +19,25 @@ That's it! The application will load and be ready to use.
 
 ## Usage
 
+The application features a three-box layout:
+
+```
++-----------------------+
+|     Total Time        |
++-----------------------+
+| Hours | Minutes | +/- |
++-----------------------+
+|       History         |
+| (scrollable)          |
++-----------------------+
+```
+
 To add or subtract time:
 
-1.  **Enter Hours (Optional):** You can enter a number in the "Enter hours" field. If left blank, it will be treated as 0 hours.
-2.  **Enter Minutes (Required):** You must enter a number in the "Enter minutes" field. This value must be a non-negative integer.
-3.  **Click a Button:**
+1.  **Enter Hours (Optional):** You can enter a number in the "Enter hours" field. If left blank or zero, it will be treated as 0 hours.
+2.  **Enter Minutes (Optional):** You can enter a number in the "Enter minutes" field. If left blank or zero, it will be treated as 0 minutes.
+3.  **Validation:** At least one of the hours or minutes fields must have a value greater than zero. If both are empty or zero, an error message will appear.
+4.  **Click a Button:**
     *   Click "Add Time" to add the specified hours and minutes to your total allowance.
     *   Click "Subtract Time" to subtract the specified hours and minutes from your total allowance. You cannot subtract more time than you currently have.
 
@@ -31,6 +46,15 @@ To add or subtract time:
 *   To add 1 hour and 30 minutes: Enter `1` in the hours field and `30` in the minutes field, then click "Add Time".
 *   To add only 45 minutes: Leave the hours field blank (or enter `0`) and enter `45` in the minutes field, then click "Add Time".
 *   To subtract 2 hours: Enter `2` in the hours field and `0` in the minutes field, then click "Subtract Time".
+
+## Layout and Scrolling
+
+The UI is structured into three main flexbox containers:
+
+-   **Top Flex Row:** Contains two side-by-side boxes:
+    -   **Display Box:** Shows the current total time.
+    -   **Input Box:** Contains the hours/minutes inputs and the Add/Subtract buttons.
+-   **History Box:** Located below the top row, this container holds the chronological list of time entries. It is vertically scrollable (`max-height: 300px; overflow-y: auto;`) when the content exceeds its maximum height, ensuring a clean and manageable history display.
 
 ## File Structure
 
