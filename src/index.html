@@ -3,28 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Local Time Tracker</title>
+    <title>Time Tracker</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <main class="tracker__container">
-        <section class="tracker__flex-top">
-            <header class="tracker__display-box">
-                <h1 class="tracker__display">0 hours 0 minutes</h1>
-            </header>
-            <form class="tracker__input-box">
-                <input type="number" id="hoursInput" class="tracker__hours-input" min="0" placeholder="Enter hours">
-                <input type="number" id="minutesInput" class="tracker__minutes-input" min="0" placeholder="Enter minutes">
-                <div id="errorMessage" class="tracker__error-message"></div>
-                <button id="addTimeBtn" class="tracker__button">Add Time</button>
-                <button id="subtractTimeBtn" class="tracker__button tracker__button--subtract">Subtract Time</button>
-            </form>
-        </section>
-        <aside class="tracker__history-box">
-            <h2 class="tracker__history-title">History</h2>
-            <ol id="historyList" class="tracker__history"></ol>
-        </aside>
-    </main>
+    <div id="display">00:00:00</div>
+
+    <div id="controls">
+        <button id="addBtn">+ Add Time</button>
+        <button id="subBtn">− Subtract Time</button>
+        <button id="undoBtn">⎌ Undo</button>
+        <button id="countBtn">Start Countdown</button>
+    </div>
+
+    <ul id="history"></ul>
+
     <script src="script.js"></script>
 </body>
 </html>

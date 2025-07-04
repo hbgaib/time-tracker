@@ -1,142 +1,49 @@
-/* General styling for the time tracker application */
-.tracker__container {
-
-    margin: 50px 60px;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+body {
     font-family: sans-serif;
-    text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-}
-
-/* Styles for the top flexible container */
-.tracker__flex-top {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-}
-
-/* Styles for the display box showing current time */
-.tracker__display-box {
-    flex: 1;
-    min-width: 150px; /* Adjust as needed */
-    display: flex;
     align-items: center;
-    justify-content: center;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    padding: 10px;
+    margin-top: 50px;
+    background-color: #f4f4f4;
 }
 
-/* Styles for the time display text */
-.tracker__display {
-    font-size: 2em;
+#display {
+    font-size: 4em;
+    margin-bottom: 20px;
     color: #333;
-    margin: 0; /* Remove default margin */
 }
 
-/* Styles for the input section */
-.tracker__input-box {
-    flex: 1;
-    min-width: 200px; /* Adjust as needed */
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* Styles for the hours and minutes input fields */
-.tracker__hours-input,
-.tracker__minutes-input {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+#controls button {
+    padding: 10px 20px;
+    margin: 5px;
     font-size: 1em;
-}
-
-/* Styles for error messages */
-.tracker__error-message {
-    color: #dc3545;
-    font-size: 0.9em;
-    text-align: left;
-    margin-top: -5px;
-    margin-bottom: 5px;
-}
-
-/* Styles for general buttons */
-.tracker__button {
-    padding: 10px 15px;
+    cursor: pointer;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     background-color: #007bff;
     color: white;
-    cursor: pointer;
-    font-size: 1em;
     transition: background-color 0.3s ease;
 }
 
-/* Hover effect for general buttons */
-.tracker__button:hover {
+#controls button:hover {
     background-color: #0056b3;
 }
 
-/* Styles for the subtract button */
-.tracker__button--subtract {
-    background-color: #dc3545;
-}
-
-/* Hover effect for the subtract button */
-.tracker__button--subtract:hover {
-    background-color: #c82333;
-}
-
-/* Styles for the history box */
-.tracker__history-box {
-    flex: 1;
-    overflow-y: auto;
-    max-height: 300px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    padding: 10px;
-}
-
-/* Styles for the history title */
-.tracker__history-title {
-    font-size: 1.5em;
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #555;
-}
-
-/* Styles for the history list */
-.tracker__history {
-    list-style-type: none;
+#history {
+    list-style: none;
     padding: 0;
-    text-align: left;
+    margin-top: 30px;
+    width: 80%;
+    max-width: 500px;
 }
 
-/* Styles for individual history list items */
-.tracker__history li {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    padding: 8px;
+#history li {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 10px;
     margin-bottom: 5px;
-    border-radius: 4px;
-    font-size: 0.9em;
-    color: #666;
-}
-
-/* Responsive adjustments for smaller screens */
-@media (max-width: 600px) {
-    .tracker__flex-top {
-        flex-direction: column;
-    }
-    .tracker__display-box,
-    .tracker__input-box {
-        min-width: unset;
-        width: 100%;
-    }
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }

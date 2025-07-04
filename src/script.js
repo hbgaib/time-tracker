@@ -1,194 +1,181 @@
-/**
- * Global variables for time tracking and history.
- */
-let totalMinutes = 0;
+
+let remainingSeconds;
 let history = [];
+let undoStack = [];
+let isCounting = false;
+let startTimestamp = 0;
+let timerID;
+let alarm = new Audio('alarm.mp3');
+alarm.loop = true;
 
-/**
- * DOM elements.
- */
-const hoursInput = document.getElementById('hoursInput');
-const minutesInput = document.getElementById('minutesInput');
-const addTimeBtn = document.getElementById('addTimeBtn');
-const subtractTimeBtn = document.getElementById('subtractTimeBtn');
-const displayElement = document.querySelector('.tracker__display');
-const historyList = document.getElementById('historyList');
-const errorMessageElement = document.getElementById('errorMessage');
-
-/**
- * Initializes the application by loading data from localStorage and rendering the UI.
- * It also sets up event listeners for the add and subtract buttons and input fields.
- */
-function initialize() {
-    const storedMinutes = localStorage.getItem('totalMinutes');
-    const storedHistory = localStorage.getItem('history');
-
-    if (storedMinutes) {
-        totalMinutes = parseInt(storedMinutes, 10);
-    }
-
-    if (storedHistory) {
-        history = JSON.parse(storedHistory);
-    }
-
-    renderDisplay();
-    renderHistory();
-
-    // Add event listeners
-    addTimeBtn.addEventListener('click', handleAdd);
-    subtractTimeBtn.addEventListener('click', handleSubtract);
-
-    // Clear error message on input change
-    hoursInput.addEventListener('input', clearErrorMessage);
-    minutesInput.addEventListener('input', clearErrorMessage);
+function updateDisplay(sec) {
+  const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+  const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+  const s = String(sec % 60).padStart(2, '0');
+  document.getElementById('display').textContent = `${h}:${m}:${s}`;
 }
 
-/**
- * Renders the current total time allowance in 'X hours Y minutes' format.
- * This function updates the text content of the display element.
- */
-function renderDisplay() {
-    displayElement.textContent = formatTime(totalMinutes);
+function formatHHMMSS(sec) {
+    const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
 }
 
-/**
- * Populates the history list with chronological entries.
- * It clears existing entries and then adds new ones in reverse order (newest first).
- */
 function renderHistory() {
-    historyList.innerHTML = ''; // Clear existing entries
-    // Render history in reverse order to show newest first
-    for (let i = history.length - 1; i >= 0; i--) {
-        const listItem = document.createElement('li');
-        listItem.textContent = history[i];
-        historyList.appendChild(listItem);
+  const ul = document.getElementById('history');
+  ul.innerHTML = '';
+  history.forEach(e => {
+    const li = document.createElement('li');
+    const sign = e.type === 'sub' ? '−' : e.type === 'add' ? '+' : '';
+    li.textContent = `${new Date(e.timestamp).toLocaleString()} → ${sign}${formatHHMMSS(e.seconds)} [${e.type}]`;
+    ul.appendChild(li);
+  });
+}
+
+function persistAll() {
+  localStorage.setItem('remainingSeconds', remainingSeconds);
+  localStorage.setItem('history', JSON.stringify(history));
+  localStorage.setItem('undoStack', JSON.stringify(undoStack));
+  localStorage.setItem('isCounting', isCounting);
+  localStorage.setItem('startTimestamp', startTimestamp);
+}
+
+function promptForSeconds(type) {
+    let input = prompt(`Enter HH:MM:SS to ${type} (e.g., 01:30:00 for 1 hour 30 minutes):`);
+    if (!input) return 0;
+
+    const parts = input.split(':').map(Number);
+    let seconds = 0;
+    if (parts.length === 3) {
+        seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+    } else if (parts.length === 2) {
+        seconds = parts[0] * 60 + parts[1];
+    } else if (parts.length === 1) {
+        seconds = parts[0];
+    } else {
+        alert('Invalid format. Please use HH:MM:SS, MM:SS, or SS.');
+        return 0;
     }
+    return seconds;
 }
 
-/**
- * Displays an error message to the user by updating the text content of the error message element.
- * @param {string} message - The error message to display.
- */
-function showErrorMessage(message) {
-    errorMessageElement.textContent = message;
+function onAddSubtract(type) {
+  const deltaSeconds = promptForSeconds(type);
+  if (deltaSeconds <= 0) return;
+
+  const entry = { type, seconds: deltaSeconds, timestamp: Date.now() };
+  history.push(entry);
+  undoStack.push(entry);
+
+  remainingSeconds += (type === 'add' ? deltaSeconds : -deltaSeconds);
+  remainingSeconds = Math.max(0, remainingSeconds);
+
+  updateDisplay(remainingSeconds);
+  renderHistory();
+  persistAll();
 }
 
-/**
- * Clears any displayed error messages by setting the text content of the error message element to an empty string.
- */
-function clearErrorMessage() {
-    errorMessageElement.textContent = '';
+function onUndo() {
+  if (!undoStack.length) return;
+  const last = undoStack.pop();
+
+  history = history.filter(e => e !== last);
+
+  remainingSeconds += (last.type === 'sub' ? last.seconds : -last.seconds);
+  remainingSeconds = Math.max(0, remainingSeconds);
+
+  updateDisplay(remainingSeconds);
+  renderHistory();
+  persistAll();
 }
 
-/**
- * Parses the hours and minutes input fields and validates them.
- * It checks for negative values and ensures at least one input is greater than zero.
- * @returns {{deltaMinutes: number, isValid: boolean}} An object containing the calculated delta in minutes and a validity flag.
- */
-function parseAndValidateInputs() {
-    const hours = parseInt(hoursInput.value, 10) || 0; // Treat blank or NaN as 0
-    const minutes = parseInt(minutesInput.value, 10) || 0; // Treat blank or NaN as 0
+function triggerAlarmLoop() {
+  alarm.play();
+}
 
-    if (hours < 0 || minutes < 0) {
-        showErrorMessage('Hours and minutes cannot be negative.');
-        return { deltaMinutes: 0, isValid: false };
+function beginCountdown() {
+  const initial = remainingSeconds;
+  timerID = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+    const current = Math.max(0, initial - elapsed);
+
+    remainingSeconds = current;
+    updateDisplay(current);
+    localStorage.setItem('remainingSeconds', current);
+
+    if (current === 0) {
+      clearInterval(timerID);
+      triggerAlarmLoop();
     }
-
-    const deltaMinutes = (hours * 60) + minutes;
-
-    if (deltaMinutes <= 0) {
-        showErrorMessage('Please enter a value greater than zero for either hours or minutes.');
-        return { deltaMinutes: 0, isValid: false };
-    }
-
-    clearErrorMessage();
-    return { deltaMinutes, isValid: true };
+  }, 1000);
 }
 
-/**
- * Handles the 'Add Time' button click event.
- * Validates input, updates totalMinutes, adds history entry, saves, and re-renders the UI.
- * Clears the input fields after a successful addition.
- */
-function handleAdd() {
-    const { deltaMinutes, isValid } = parseAndValidateInputs();
-    if (!isValid) return;
+function startCountdown() {
+  isCounting = true;
+  startTimestamp = Date.now();
+  persistAll();
 
-    totalMinutes += deltaMinutes;
-    const timestamp = new Date().toLocaleString();
-    const historyEntry = `${formatDeltaTime(deltaMinutes)} – ${timestamp}`;
-    history.push(`+${historyEntry}`);
-
-    saveAndRender();
-    hoursInput.value = ''; // Clear input field
-    minutesInput.value = ''; // Clear input field
+  document.getElementById('countBtn').textContent = 'Stop Countdown';
+  beginCountdown();
 }
 
-/**
- * Handles the 'Subtract Time' button click event.
- * Validates input, updates totalMinutes, adds history entry, saves, and re-renders the UI.
- * Displays an error if attempting to subtract more time than available.
- * Clears the input fields after a successful subtraction.
- */
-function handleSubtract() {
-    const { deltaMinutes, isValid } = parseAndValidateInputs();
-    if (!isValid) return;
+function stopCountdown() {
+  clearInterval(timerID);
 
-    if (totalMinutes < deltaMinutes) {
-        showErrorMessage('Cannot subtract more time than available.');
-        return;
-    }
-
-    totalMinutes -= deltaMinutes;
-    const timestamp = new Date().toLocaleString();
-    const historyEntry = `${formatDeltaTime(deltaMinutes)} – ${timestamp}`;
-    history.push(`-${historyEntry}`);
-
-    saveAndRender();
-    hoursInput.value = ''; // Clear input field
-    minutesInput.value = ''; // Clear input field
-}
-
-/**
- * Formats a given number of minutes into 'X hours Y minutes' string.
- * @param {number} minutes - The total minutes to format.
- * @returns {string} The formatted time string.
- */
-function formatTime(minutes) {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours} hours ${remainingMinutes} minutes`;
-}
-
-/**
- * Formats a given number of minutes into 'Hh Mm' string, omitting zero segments.
- * If both hours and minutes are zero, it will display '0m'.
- * @param {number} minutes - The total minutes to format.
- * @returns {string} The formatted time string for history.
- */
-function formatDeltaTime(minutes) {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    let parts = [];
-    if (hours > 0) {
-        parts.push(`${hours}h`);
-    }
-    if (remainingMinutes > 0 || (hours === 0 && remainingMinutes === 0)) { // Include 0m if both are 0
-        parts.push(`${remainingMinutes}m`);
-    }
-    return parts.join(' ');
-}
-
-/**
- * Saves the current totalMinutes and history to localStorage and re-renders the UI.
- * This function ensures data persistence and UI consistency.
- */
-function saveAndRender() {
-    localStorage.setItem('totalMinutes', totalMinutes);
-    localStorage.setItem('history', JSON.stringify(history));
-    renderDisplay();
+  if (!alarm.paused) {
+    alarm.pause();
+    alarm.currentTime = 0;
+    remainingSeconds = 0;
+  } else {
+    const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+    remainingSeconds = Math.max(0, remainingSeconds - elapsed); // Corrected: subtract elapsed from remainingSeconds
+    
+    const entry = { type: 'countdown', seconds: elapsed, timestamp: Date.now() };
+    history.push(entry);
+    undoStack.push(entry);
     renderHistory();
+  }
+
+  isCounting = false;
+  persistAll();
+  document.getElementById('countBtn').textContent = 'Start Countdown';
 }
 
-// Initialize the application when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', initialize);
+
+function init() {
+  remainingSeconds = parseInt(localStorage.getItem('remainingSeconds')) || 0;
+  history        = JSON.parse(localStorage.getItem('history'))    || [];
+  undoStack      = JSON.parse(localStorage.getItem('undoStack'))  || [];
+  isCounting     = localStorage.getItem('isCounting') === 'true';
+  startTimestamp = parseInt(localStorage.getItem('startTimestamp')) || 0;
+
+  updateDisplay(remainingSeconds);
+  renderHistory();
+
+  if (isCounting) {
+    const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+    remainingSeconds = Math.max(0, remainingSeconds - elapsed);
+    updateDisplay(remainingSeconds);
+    localStorage.setItem('remainingSeconds', remainingSeconds);
+
+    if (remainingSeconds > 0) {
+      beginCountdown();
+    } else {
+      triggerAlarmLoop();
+      document.getElementById('countBtn').textContent = 'Stop Countdown';
+    }
+  } else {
+    document.getElementById('countBtn').textContent = 'Start Countdown';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    document.getElementById('addBtn').addEventListener('click', () => onAddSubtract('add'));
+    document.getElementById('subBtn').addEventListener('click', () => onAddSubtract('sub'));
+    document.getElementById('undoBtn').addEventListener('click', onUndo);
+    document.getElementById('countBtn').addEventListener('click', () => {
+        isCounting ? stopCountdown() : startCountdown();
+    });
+});
