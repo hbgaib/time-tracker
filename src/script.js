@@ -113,8 +113,9 @@ function beginCountdown() {
 
 function startCountdown() {
   isCounting = true;
+  // Reset startTimestamp on every resume
   startTimestamp = Date.now();
-  persistAll();
+  persistAll(); // Persist updated startTimestamp immediately
 
   document.getElementById('countBtn').textContent = 'Stop Countdown';
   beginCountdown();
@@ -129,7 +130,7 @@ function stopCountdown() {
     remainingSeconds = 0;
   } else {
     const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
-    remainingSeconds = Math.max(0, remainingSeconds - elapsed); // Corrected: subtract elapsed from remainingSeconds
+    // remainingSeconds = Math.max(0, remainingSeconds - elapsed); // Removed: already updated each tick
     
     const entry = { type: 'countdown', seconds: elapsed, timestamp: Date.now() };
     history.push(entry);
@@ -154,10 +155,12 @@ function init() {
   renderHistory();
 
   if (isCounting) {
-    const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
-    remainingSeconds = Math.max(0, remainingSeconds - elapsed);
-    updateDisplay(remainingSeconds);
-    localStorage.setItem('remainingSeconds', remainingSeconds);
+    // Compute missed elapsed while page was closed
+    // The beginCountdown will handle the elapsed time, so no need to subtract here.
+    // const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+    // remainingSeconds = Math.max(0, remainingSeconds - elapsed);
+    // updateDisplay(remainingSeconds);
+    // localStorage.setItem('remainingSeconds', remainingSeconds);
 
     if (remainingSeconds > 0) {
       beginCountdown();
