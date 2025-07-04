@@ -25,7 +25,7 @@ function formatHHMMSS(sec) {
 function renderHistory() {
   const ul = document.getElementById('history');
   ul.innerHTML = '';
-  history.forEach(e => {
+  [...history].reverse().forEach(e => {
     const li = document.createElement('li');
     const sign = e.type === 'sub' ? '−' : e.type === 'add' ? '+' : '';
     li.textContent = `${new Date(e.timestamp).toLocaleString()} → ${sign}${formatHHMMSS(e.seconds)} [${e.type}]`;
